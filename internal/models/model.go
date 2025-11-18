@@ -26,10 +26,3 @@ func NewTask(id int, title, description string) Task {
 		DoneAt:    nil,
 	}
 }
-
-func (t *Task) Done() {
-	done := time.Now()
-
-	t.IsDone = true
-	t.DoneAt = &done
-}
