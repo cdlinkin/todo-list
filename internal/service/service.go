@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"time"
 	"todo-list/internal/errors"
 	"todo-list/internal/models"
@@ -34,38 +35,61 @@ func (s *Service) AddTask(id int, title, description string) error {
 	return nil
 }
 
-func (s *Service) ListTask() *[]models.Task {
-	return &s.Storage.Tasks
+func (s *Service) ListTask() {
+	taskDone := "[✓]"
+	taskUnDone := "[ ]"
+	var status string
+	for _, task := range s.Storage.Tasks {
+		if task.IsDone {
+			status = taskDone
+		} else {
+			status = taskUnDone
+		}
+
+		fmt.Printf("%s | %d |Задача: %s | Описание: %s | Создана: %s |\n", status, task.ID, task.Title, task.Description, task.CreatedAt.Format("2006-01-02 15:04"))
+		if task.DoneAt != nil {
+			fmt.Printf(" Время выполнения: %s |\n", task.DoneAt.Format("2006-01-02 15:04"))
+		}
+	}
+
 }
 
 func (s *Service) DoneTask(id int) error {
+	found := false
 	for i := range s.Storage.Tasks {
 
 		if id == s.Storage.Tasks[i].ID {
 
-			if s.Storage.Tasks[i].IsDone == true {
-				return errors.ErrTaskAlreadyDone
-			}
+			found = true
 
 			done := time.Now()
 			s.Storage.Tasks[i].IsDone = true
 			s.Storage.Tasks[i].DoneAt = &done
+		}
 
-			return nil
+		if !found {
+			return errors.ErrTaskIsNotFound
 		}
 	}
+
 	return nil
 }
 
 func (s *Service) DeleteTask(id int) error {
+	found := false
 	for i := range s.Storage.Tasks {
 		if id == s.Storage.Tasks[i].ID {
 			s.Storage.Tasks = append(s.Storage.Tasks[:i], s.Storage.Tasks[i+1:]...)
+
+			found = true
 			break
 		}
 	}
+	if !found {
+		return errors.ErrTaskIsNotFound
+	}
 
-	return errors.ErrTaskIsNotFound
+	return nil
 }
 
 func IdGenerator(s *storage.Storage) int {

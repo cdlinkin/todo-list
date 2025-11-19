@@ -41,12 +41,12 @@ func Run() error {
 				services.AddTask(service.IdGenerator(storage), title, description)
 			}
 		case "list":
-			if len(*services.ListTask()) == 0 {
+			if len(storage.Tasks) == 0 {
 				fmt.Println(errors.ErrListIsEmpty)
 				continue
 			}
 
-			fmt.Println(services.ListTask())
+			services.ListTask()
 		case "done":
 			inputId := input[1]
 			id, err := strconv.Atoi(inputId)
