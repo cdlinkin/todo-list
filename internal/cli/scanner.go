@@ -6,19 +6,19 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"todo-list/internal/errors"
 	"todo-list/internal/service"
 	"todo-list/internal/storage"
 )
 
-func Run() { // demo
+func Run() error {
 	storage := storage.NewStorage()
 	services := service.NewService(storage)
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		if checkInput := scanner.Scan(); !checkInput {
-			fmt.Println("Ошибка ввода!") // err
-			return
+			fmt.Println(errors.ErrInput)
 		}
 
 		text := scanner.Text()
@@ -26,8 +26,7 @@ func Run() { // demo
 		input := strings.Fields(text)
 
 		if len(input) == 0 {
-			fmt.Println("пустая команда") // err
-			continue
+			fmt.Println(errors.ErrInput)
 		}
 
 		command := input[0]
@@ -35,26 +34,31 @@ func Run() { // demo
 		switch command {
 		case "add":
 			if len(input) < 3 {
-				fmt.Println("Недостаточно аргументов") // err
+				fmt.Println(errors.ErrNotEnoughAruments)
 			} else {
 				title := input[1]
 				description := strings.Join(input[2:], " ")
 				services.AddTask(service.IdGenerator(storage), title, description)
 			}
 		case "list":
+			if len(*services.ListTask()) == 0 {
+				fmt.Println(errors.ErrListIsEmpty)
+				continue
+			}
+
 			fmt.Println(services.ListTask())
 		case "done":
 			inputId := input[1]
 			id, err := strconv.Atoi(inputId)
 			if err != nil {
-				fmt.Println("error") // err
+				fmt.Println(errors.ErrConvertStrconv)
 			}
 			services.DoneTask(id)
 		case "delete":
 			inputId := input[1]
 			id, err := strconv.Atoi(inputId)
 			if err != nil {
-				fmt.Println("error") // err
+				fmt.Println(errors.ErrConvertStrconv)
 			}
 			services.DeleteTask(id)
 		case "help":
@@ -62,9 +66,9 @@ func Run() { // demo
 			continue
 		case "exit":
 			fmt.Println("спасибо за внимание!")
-			return
+			return nil
 		default:
-			fmt.Printf("Неизвестная команда: %s\n", input) // err
+			fmt.Printf("Неизвестная команда: %s\n", input)
 		}
 	}
 }

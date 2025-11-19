@@ -1,8 +1,8 @@
 package service
 
 import (
-	"fmt"
 	"time"
+	"todo-list/internal/errors"
 	"todo-list/internal/models"
 	"todo-list/internal/storage"
 )
@@ -17,20 +17,21 @@ func NewService(storage *storage.Storage) *Service {
 	}
 }
 
-func (s *Service) AddTask(id int, title, description string) {
+func (s *Service) AddTask(id int, title, description string) error {
 	if title == "" {
-		fmt.Println("title пуст") // err
+		return errors.ErrTitleIsEmpty
 	}
 
 	for i := range s.Storage.Tasks {
 		if id == s.Storage.Tasks[i].ID {
-			fmt.Println("такой id уже существует") // err
+			return errors.ErrTaskAlreadyExists
 		}
 	}
 
 	task := models.NewTask(id, title, description)
 
 	s.Storage.Tasks = append(s.Storage.Tasks, task)
+	return nil
 }
 
 func (s *Service) ListTask() *[]models.Task {
@@ -39,11 +40,13 @@ func (s *Service) ListTask() *[]models.Task {
 
 func (s *Service) DoneTask(id int) error {
 	for i := range s.Storage.Tasks {
-		if s.Storage.Tasks[i].IsDone == true {
-			return fmt.Errorf("задача уже выполнена") // err
-		}
 
 		if id == s.Storage.Tasks[i].ID {
+
+			if s.Storage.Tasks[i].IsDone == true {
+				return errors.ErrTaskAlreadyDone
+			}
+
 			done := time.Now()
 			s.Storage.Tasks[i].IsDone = true
 			s.Storage.Tasks[i].DoneAt = &done
@@ -51,10 +54,10 @@ func (s *Service) DoneTask(id int) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("задача уже выполнена")
+	return nil
 }
 
-func (s *Service) DeleteTask(id int) {
+func (s *Service) DeleteTask(id int) error {
 	for i := range s.Storage.Tasks {
 		if id == s.Storage.Tasks[i].ID {
 			s.Storage.Tasks = append(s.Storage.Tasks[:i], s.Storage.Tasks[i+1:]...)
@@ -62,7 +65,7 @@ func (s *Service) DeleteTask(id int) {
 		}
 	}
 
-	fmt.Println("задача не найдена") // err
+	return errors.ErrTaskIsNotFound
 }
 
 func IdGenerator(s *storage.Storage) int {
