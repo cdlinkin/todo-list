@@ -8,10 +8,10 @@ type Task struct {
 	ID          int
 	Title       string
 	Description string
-	IsDone      bool
+	Completed   bool
 
-	CreatedAt time.Time
-	DoneAt    *time.Time
+	CreatedAt   time.Time
+	CompletedAt *time.Time
 }
 
 func NewTask(id int, title, description string) Task {
@@ -20,9 +20,9 @@ func NewTask(id int, title, description string) Task {
 
 		Title:       title,
 		Description: description,
-		IsDone:      false,
+		Completed:   false,
 
-		CreatedAt: time.Now(),
-		DoneAt:    nil,
+		CreatedAt:   time.Now(),
+		CompletedAt: nil,
 	}
 }

@@ -30,25 +30,27 @@ func (s *Service) AddTask(id int, title, description string) error {
 	}
 
 	task := models.NewTask(id, title, description)
-
 	s.Storage.Tasks = append(s.Storage.Tasks, task)
 	return nil
 }
 
 func (s *Service) ListTask() {
-	taskDone := "[✓]"
-	taskUnDone := "[ ]"
-	var status string
+	var (
+		taskDone   = "[✓]"
+		taskUnDone = "[ ]"
+		status     string
+	)
+
 	for _, task := range s.Storage.Tasks {
-		if task.IsDone {
+		if task.Completed {
 			status = taskDone
 		} else {
 			status = taskUnDone
 		}
 
 		fmt.Printf("%s | %d |Задача: %s | Описание: %s | Создана: %s |\n", status, task.ID, task.Title, task.Description, task.CreatedAt.Format("2006-01-02 15:04"))
-		if task.DoneAt != nil {
-			fmt.Printf(" Время выполнения: %s |\n", task.DoneAt.Format("2006-01-02 15:04"))
+		if task.CompletedAt != nil {
+			fmt.Printf(" Время выполнения: %s |\n", task.CompletedAt.Format("2006-01-02 15:04"))
 		}
 	}
 
@@ -63,8 +65,8 @@ func (s *Service) DoneTask(id int) error {
 			found = true
 
 			done := time.Now()
-			s.Storage.Tasks[i].IsDone = true
-			s.Storage.Tasks[i].DoneAt = &done
+			s.Storage.Tasks[i].Completed = true
+			s.Storage.Tasks[i].CompletedAt = &done
 		}
 
 		if !found {
